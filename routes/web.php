@@ -85,4 +85,4 @@ Route::get('order/{order_id}', [OrderDetailsController::class, 'index'])->name('
 Route::get('processing/init/{order_id}', [ProcessingController::class, 'getOrderDetails'])->name('processing.init');
 
 
-Route::get('/api/order/status',[OrderStatusController::class,'order_status']);
+/*Route::get('/api/order/status',[OrderStatusController::class,'order_status']);*/

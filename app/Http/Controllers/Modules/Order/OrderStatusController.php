@@ -53,13 +53,13 @@ class OrderStatusController extends Controller
 
             } else {
                 if ($response->data->qrType == env('PRODUCT_SJT')) {
-                    array_push($response, $this->sjt_status_insert($response, $order));
+                    $response[] = $this->sjt_status_insert($response, $order);
                 } else if ($response->data->qrType == env('PRODUCT_RJT')) {
-                    array_push($response, $this->rjt_status_insert($response, $order));
+                    $response[] = $this->rjt_status_insert($response, $order);
                 } else if ($response->data->qrType == env('PRODUCT_SV')) {
-                    array_push($response, $this->sv_status_insert($response, $order));
+                    $response[] = $this->sv_status_insert($response, $order);
                 } else if ($response->data->qrType == env('PRODUCT_TP')) {
-                    array_push($response, $this->tp_status_insert($response, $order));
+                    $response[] = $this->tp_status_insert($response, $order);
                 } else {
                     return response([
                         'status' => false,
@@ -81,9 +81,6 @@ class OrderStatusController extends Controller
 
 
         if ($ticket_check == null) {
-
-            $utility = new OrderUtility();
-            $demo = $utility->updateSaleOrder($order, $response);
 
             foreach ($response->data->trips as $trip) {
                 SjtSlBooking::store($response, $trip, $order);

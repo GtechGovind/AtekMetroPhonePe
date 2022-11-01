@@ -68,7 +68,7 @@ export default {
     },
 
     mounted() {
-        this.orderStatus();
+       /* this.orderStatus();*/
     },
 
     methods : {
