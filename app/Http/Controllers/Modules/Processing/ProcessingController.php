@@ -59,6 +59,7 @@ class ProcessingController extends Controller
                     RjtSlBooking::store($response, $trip, $order);
                 }
             }
+            $this->updateOrderStatus($response, $order);
         }
     }
 
