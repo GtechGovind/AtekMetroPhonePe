@@ -378,11 +378,36 @@ class ApiController extends Controller
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->get($this->base_url . "/qrcode/penalty/status?transactionId=$slave_id&station=$station_id")
             ->collect();
+
+        Log::info("GRA INFO -> " .$response);
+
         return json_decode($response);
     }
 
     public function applyGra($response, $order)
     {
+        Log::info("GRA REQ -> " .'{
+                "data": {
+                    "fare"                      : "' . $order->total_price . '",
+                    "destination"               : "' . $order->des_stn_id . '",
+                    "refTxnId"                  : "' . $order->ref_sl_qr . '",
+                    "tokenType"                 : "' . $order->pass_id . '",
+                    "supportType"               : "' . $this->media_type_id . '",
+                    "qrType"                    : "' . $order->product_id . '",
+                    "operatorId"                : "' . $this->operator_id . '",
+                    "operatorTransactionId"     : "' . $order->sale_or_no . '",
+                    "activationTime"            : "' . time() . '",
+                    "freeExitOptionId"          : 0,
+                    "penalties"                 : ' . json_encode($response->data->penalties, JSON_OBJECT_AS_ARRAY) . ',
+                    "overTravelCharges"         : ' . json_encode($response->data->overTravelCharges, JSON_OBJECT_AS_ARRAY) . '
+                },
+                "payment": {
+                    "pass_price"                : "' . $order->total_price . '",
+                    "pgId"                      : "' . $this->pg_id . '",
+                    "pg_order_id"               : "' . $order->pg_txn_no . '"
+                }
+            }');
+
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->withBody(json_encode(json_decode('{
                 "data": {
@@ -407,6 +432,8 @@ class ApiController extends Controller
             }')), 'application/json')
             ->post($this->base_url . '/qrcode/penalty/issueToken')
             ->collect();
+
+        Log::info("GRA RESPONSE -> " . $response);
 
         return json_decode($response);
 
