@@ -12,6 +12,7 @@ use App\Models\SvSlBooking;
 use App\Models\TpSlBooking;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class ProcessingController extends Controller
@@ -25,23 +26,29 @@ class ProcessingController extends Controller
 
     public function init($order)
     {
-        ($order->op_type_id == env('ISSUE')
-            ? ($order->product_id == env('PRODUCT_SJT') || $order->product_id == env('PRODUCT_RJT')
-                ? $this->genTicket($order)
-                : $this->genPass($order))
-            : ($order->op_type_id == env('RELOAD')
-                ? $this->reloadPass($order)
-                : $this->graTransaction($order)));
+        Log::info("CONTROLLER -> PROCESSING");
+
+        if ($order->op_type_id == env('ISSUE')) {
+            if ($order->product_id == env('PRODUCT_SJT') || $order->product_id == env('PRODUCT_RJT')) {
+                $this->genTicket($order);
+            } else {
+                $this->genPass($order);
+            }
+        } elseif ($order->op_type_id == env('RELOAD')) {
+            $this->reloadPass($order);
+        } else {
+            $this->graTransaction($order);
+        }
+
     }
 
-    private function genTicket($order)
+    private function genTicket($order): void
     {
         $api = new ApiController();
         $response = $api->genSjtRjtTicket($order);
 
         if (is_null($response) || $response->status == "BSE") {
             $this->updateOrderStatus($response, $order);
-            return false;
         } else {
             if ($order->product_id == env('PRODUCT_SJT')) {
                 foreach ($response->data->trips as $trip) {
@@ -52,7 +59,6 @@ class ProcessingController extends Controller
                     RjtSlBooking::store($response, $trip, $order);
                 }
             }
-            return true;
         }
     }
 
@@ -126,7 +132,8 @@ class ProcessingController extends Controller
 
     }
 
-    public function updateOrderStatus($response, $order) {
+    public function updateOrderStatus($response, $order)
+    {
 
         if ($response->success) {
 
@@ -151,7 +158,8 @@ class ProcessingController extends Controller
 
     }
 
-    public function updateReloadOrderStatus($response, $order) {
+    public function updateReloadOrderStatus($response, $order)
+    {
 
         if ($response->success) {
 
@@ -176,7 +184,8 @@ class ProcessingController extends Controller
 
     }
 
-    public function updateGRAOrderStatus($response, $order, $isInfo) {
+    public function updateGRAOrderStatus($response, $order, $isInfo)
+    {
 
         if ($response->success) {
 

@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ApiController extends Controller
 {
@@ -34,10 +35,33 @@ class ApiController extends Controller
     public function genSjtRjtTicket($data)
     {
 
-
         $user = DB::table('users')
-                ->where('pax_id','=',$data->pax_id)
-                ->first();
+            ->where('pax_id', '=', $data->pax_id)
+            ->first();
+
+        Log::info("MMOPL-REQUEST -> " . '{
+                "data": {
+                    "fare"                      : "' . $data->total_price . '",
+                    "source"                    : "' . $data->src_stn_id . '",
+                    "destination"               : "' . $data->des_stn_id . '",
+                    "tokenType"                 : "' . $data->pass_id . '",
+                    "supportType"               : "' . $data->media_type_id . '",
+                    "qrType"                    : "' . $data->product_id . '",
+                    "operationTypeId"           : "' . $this->op_type_id_issue . '",
+                    "operatorId"                : "' . $this->operator_id . '",
+                    "operatorTransactionId"     : "' . $data->sale_or_no . '",
+                    "name"                      : "' . $user->pax_name . '",
+                    "email"                     : "' . $user->pax_email . '",
+                    "mobile"                    : "' . $user->pax_mobile . '",
+                    "activationTime"            : "' . $data->insert_date . '",
+                    "trips"                     : "' . $data->unit . '"
+                },
+                "payment": {
+                    "pass_price"                : "' . $data->total_price . '",
+                    "pgId"                      : "' . $this->pg_id . '",
+                    "pg_order_id"               : "' . $data->pg_txn_no . '"
+                }
+            }');
 
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->withBody('{
@@ -51,9 +75,9 @@ class ApiController extends Controller
                     "operationTypeId"           : "' . $this->op_type_id_issue . '",
                     "operatorId"                : "' . $this->operator_id . '",
                     "operatorTransactionId"     : "' . $data->sale_or_no . '",
-                    "name"                      : "'.$user->pax_name.'",
-                    "email"                     : "'.$user->pax_email.'",
-                    "mobile"                    : "'.$user->pax_mobile.'",
+                    "name"                      : "' . $user->pax_name . '",
+                    "email"                     : "' . $user->pax_email . '",
+                    "mobile"                    : "' . $user->pax_mobile . '",
                     "activationTime"            : "' . $data->insert_date . '",
                     "trips"                     : "' . $data->unit . '"
                 },
@@ -65,6 +89,9 @@ class ApiController extends Controller
             }', 'application/json')
             ->post($this->base_url . '/qrcode/issueToken')
             ->collect();
+
+        Log::info("MMOPL_RESPONSE -> " . $response);
+
         return json_decode($response);
     }
 
@@ -80,7 +107,7 @@ class ApiController extends Controller
     public function genStoreValuePass($data)
     {
         $user = DB::table('users')
-            ->where('pax_id','=',$data->pax_id)
+            ->where('pax_id', '=', $data->pax_id)
             ->first();
 
         $response = Http::withHeaders(['Authorization' => $this->auth])
@@ -93,7 +120,7 @@ class ApiController extends Controller
                     "qrType"                    : "' . $data->product_id . '",
                     "operationTypeId"           : "' . $this->op_type_id_issue . '",
                     "operatorId"                : "' . $this->operator_id . '",
-                    "name"                      : "' . $user->pax_name.'",
+                    "name"                      : "' . $user->pax_name . '",
                     "email"                     : "' . $user->pax_email . '",
                     "mobile"                    : "' . $user->pax_mobile . '",
                     "activationTime"            : "' . Carbon::now() . '",
@@ -124,7 +151,7 @@ class ApiController extends Controller
     public function genTrip($data)
     {
         $user = DB::table('users')
-            ->where('pax_id','=',$data->pax_id)
+            ->where('pax_id', '=', $data->pax_id)
             ->first();
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->withBody('{
@@ -191,7 +218,7 @@ class ApiController extends Controller
     public function reloadStoreValuePass($order)
     {
         $user = DB::table('users')
-            ->where('pax_id','=',$order->pax_id)
+            ->where('pax_id', '=', $order->pax_id)
             ->first();
 
         $response = Http::withHeaders(['Authorization' => $this->auth])
@@ -224,7 +251,7 @@ class ApiController extends Controller
     public function reloadTripPass($order)
     {
         $user = DB::table('users')
-            ->where('pax_id','=',$order->pax_id)
+            ->where('pax_id', '=', $order->pax_id)
             ->first();
 
         $response = Http::withHeaders(['Authorization' => $this->auth])
@@ -262,7 +289,7 @@ class ApiController extends Controller
     public function genTripPass($data)
     {
         $user = DB::table('users')
-            ->where('pax_id','=',$data->pax_id)
+            ->where('pax_id', '=', $data->pax_id)
             ->first();
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->withBody('{
@@ -425,7 +452,8 @@ class ApiController extends Controller
 
     }
 
-    public function order_status($order_id){
+    public function order_status($order_id)
+    {
 
         print_r($order_id);
         $response = Http::withHeaders(['Authorization' => $this->auth])
