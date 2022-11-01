@@ -190,7 +190,7 @@ class ProcessingController extends Controller
 
         if ($response->status == "OK") {
 
-            if ($isInfo) {
+            if (!$isInfo) {
                 DB::table('sale_order')
                     ->where('sale_or_no', '=', $order->sale_or_no)
                     ->update([
