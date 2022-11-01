@@ -136,7 +136,7 @@ class ProcessingController extends Controller
     public function updateOrderStatus($response, $order)
     {
 
-        if ($response->success) {
+        if ($response->status == "OK") {
 
             DB::table('sale_order')
                 ->where('sale_or_no', '=', $order->sale_or_no)
@@ -162,7 +162,7 @@ class ProcessingController extends Controller
     public function updateReloadOrderStatus($response, $order)
     {
 
-        if ($response->success) {
+        if ($response->status == "OK") {
 
             DB::table('sale_order')
                 ->where('sale_or_no', '=', $order->sale_or_no)
@@ -188,7 +188,7 @@ class ProcessingController extends Controller
     public function updateGRAOrderStatus($response, $order, $isInfo)
     {
 
-        if ($response->success) {
+        if ($response->status == "OK") {
 
             if ($isInfo) {
                 DB::table('sale_order')
