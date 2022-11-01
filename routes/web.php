@@ -2,7 +2,8 @@
 
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\Modules\GateRejection\GraController;
-use App\Http\Controllers\Modules\OrderStatus\OrderStatusController;
+use App\Http\Controllers\Modules\Order\OrderStatusController;
+use App\Http\Controllers\Modules\OrderDetailsController;
 use App\Http\Controllers\Modules\Processing\ProcessingController;
 use App\Http\Controllers\Modules\Refund\RefundController;
 use App\Http\Controllers\Modules\StoreValue\StoreValueDashboardController;
@@ -80,6 +81,8 @@ Route::middleware('auth')->group(function () {
 
 });
 
-/*Route::get('order/{order_id}', [OrderDetailsController::class, 'index'])->name('details-order');*/
+Route::get('order/{order_id}', [OrderDetailsController::class, 'index'])->name('details-order');
+Route::get('processing/init/{order_id}', [ProcessingController::class, 'getOrderDetails'])->name('processing.init');
+
 
 Route::get('/api/order/status',[OrderStatusController::class,'order_status']);

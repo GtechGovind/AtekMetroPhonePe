@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Modules\OrderStatus;
+namespace App\Http\Controllers\Modules\Order;
 
 use App\Http\Controllers\Api\MMOPL\ApiController;
 use App\Http\Controllers\Controller;
