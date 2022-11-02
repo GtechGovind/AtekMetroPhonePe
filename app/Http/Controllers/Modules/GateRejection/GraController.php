@@ -1,10 +1,11 @@
-<?php /** @noinspection LaravelFunctionsInspection */
+<?php
 
 namespace App\Http\Controllers\Modules\GateRejection;
 
 use App\Http\Controllers\Api\MMOPL\ApiController;
 use App\Http\Controllers\Api\PhonePe\PhonePePaymentController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Modules\Utility\GLog;
 use App\Http\Controllers\Modules\Utility\OrderUtility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -15,6 +16,9 @@ class GraController extends Controller
 {
     public function info($slave_id, $station_id)
     {
+
+        GLog::title("GRA STARTED");
+
         $api = new ApiController();
         $response = $api -> graInfo($slave_id, $station_id);
 
@@ -77,6 +81,8 @@ class GraController extends Controller
 
         $api = new PhonePePaymentController();
         $response = $api->pay($order);
+
+        GLog::title("GRA ENDED");
 
         return $response->success
             ? response([

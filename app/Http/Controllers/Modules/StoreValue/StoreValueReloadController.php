@@ -51,6 +51,10 @@ class StoreValueReloadController extends Controller
     public function reload(Request $request)
     {
 
+        $request->validate([
+            'price' => 'required|integer|min:100|max:3000|multiple_of:100',
+        ]);
+
         $old_order = DB::table('sale_order')
             ->where('sale_or_no', '=', $request->input('order_id'))
             ->first();

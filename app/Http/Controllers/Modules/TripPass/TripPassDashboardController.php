@@ -18,7 +18,6 @@ class TripPassDashboardController extends Controller
             ->where(function ($query) {
                 $query->where('so.sale_or_status', '=', env('ORDER_RELOADED'))
                     ->orWhere('so.sale_or_status', '=', env('ORDER_TICKET_GENERATED'));
-
             })
             ->where('so.product_id', '=', env('PRODUCT_TP'))
             ->orderBy('so.txn_date', 'desc')

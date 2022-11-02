@@ -46,7 +46,6 @@ class TripPassReloadController extends Controller
             ->where(function ($query) {
                 $query->where('so.sale_or_status', '=', env('ORDER_RELOADED'))
                     ->orWhere('so.sale_or_status', '=', env('ORDER_TICKET_GENERATED'));
-
             })
             ->where('so.sale_or_no', '=', $order_id)
             ->first();
