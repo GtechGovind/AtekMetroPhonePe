@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Modules\Refund;
 use App\Http\Controllers\Api\MMOPL\ApiController;
 use App\Http\Controllers\Api\PhonePe\PhonePeRefundController;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Modules\Utility\GLog;
 use App\Http\Controllers\Modules\Utility\OrderUtility;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,9 @@ class RefundController extends Controller
 {
     public function info($order_id)
     {
+
+        GLog::title("REFUND STARTED");
+
         $order = DB::table('sale_order')
             ->where('sale_or_no', '=', $order_id)
             ->first();
@@ -91,6 +95,8 @@ class RefundController extends Controller
         else if ($order->product_id == env('PRODUCT_SV')) return $this->svRefund($order, $response);
         else if ($order->product_id == env('PRODUCT_TP')) return $this->tpRefund($order, $response);
 
+        GLog::title("REFUND ENDED");
+
         return response([
             'status' => false,
             'error' => 'Invalid product'
@@ -120,7 +126,7 @@ class RefundController extends Controller
         // REFUNDING PHONEPE
         $phonepe = new PhonePeRefundController();
         $refundResponse = $phonepe->init($order, $refund_order_id, $response->data->details->pass->refundAmount);
-		
+
         // IF PHONEPE REFUND FAILED
         if (!$refundResponse->success) {
             return response([
@@ -161,8 +167,8 @@ class RefundController extends Controller
             ->update([
                 'sale_or_status' => env('ORDER_REFUNDED')
             ]);
-      
-      
+
+
 
         return response([
             'status' => true,
