@@ -4,24 +4,60 @@ namespace App\Http\Controllers\Modules\Ticket;
 
 use App\Http\Controllers\Api\PhonePe\PhonePePaymentController;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\Modules\Utility;
+use App\Http\Controllers\Modules\Utility\GLog;
+use App\Http\Controllers\Modules\Utility\OrderUtility;
 use App\Models\SaleOrder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class TicketOrderController extends Controller
 {
+
     public function index()
     {
-        return Inertia::render('Ticket/Order', [
+        return Inertia::render('Modules/Ticket/Order', [
             'stations' => DB::table('stations')->get(['stn_id', 'stn_name'])
         ]);
     }
 
+    public function indexRecent($source, $destination)
+    {
+        return Inertia::render('Modules/Ticket/Order', [
+            'stations' => DB::table('stations')->get(['stn_id', 'stn_name']),
+            'source' => $source,
+            'destination' => $destination
+        ]);
+    }
+
+    /*
+        CHECK IF USER HAS
+        ANY UNPAID ORDERS
+    */
+    public function isPending()
+    {
+        $pendingOrders = DB::table('sale_order')
+            ->where('pax_id', Auth::id())
+            ->where('sale_or_status', '=', env('ORDER_GENERATED'))
+            ->get()->count();
+
+        return $pendingOrders > 0
+            ? response(['isPendingPayment' => true])
+            : response(['isPendingPayment' => false]);
+
+    }
+
+    /*
+        CREATE NEW ORDER
+    */
     public function create(Request $request)
     {
-        $request -> validate([
+
+        GLog::title("ORDER PROCESS STARTED");
+
+        $request->validate([
             'source_id' => ['required'],
             'destination_id' => ['required'],
             'pass_id' => ['required'],
@@ -29,12 +65,13 @@ class TicketOrderController extends Controller
             'fare' => ['required']
         ]);
 
-        $saleOrderNumber = Utility::genSaleOrderNumber(
+        GLog::info("ORDER REQUEST", $request->getContent());
+
+        $saleOrderNumber = OrderUtility::genSaleOrderNumber(
             $request->input('pass_id')
         );
 
-        $saleOrder = new SaleOrder();
-        $saleOrder -> store($request, $saleOrderNumber);
+        SaleOrder::store($request, $saleOrderNumber);
 
         $order = DB::table('sale_order as so')
             ->join('stations as s', 's.stn_id', '=', 'so.src_stn_id')
@@ -46,27 +83,16 @@ class TicketOrderController extends Controller
         $api = new PhonePePaymentController();
         $response = $api->pay($order);
 
-
-
-        if ($response->success == true) {
-            return response([
-                'status'  =>true,
-                'response'=>$response
-            ]);
-
-           /* return Inertia::render('Ticket/Order', [
-                'readyToPay' => true,
+        return $response->success
+            ? response([
+                'status' => true,
                 'redirectUrl' => $response->data->redirectUrl,
-                'response' =>$response
-            ]);*/
-        }
-
-        return redirect()->back()->withErrors([
-            'hasError' => false,
-            'error' => $response->code
-        ]);
-
-
-
+                'order_id' => $saleOrderNumber
+            ])
+            : response([
+                'status' => false,
+                'error' => $response,
+                'order_id' => $saleOrderNumber
+            ]);
     }
 }

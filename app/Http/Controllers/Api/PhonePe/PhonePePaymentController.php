@@ -3,12 +3,8 @@
 namespace App\Http\Controllers\Api\PhonePe;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\LogFile\LogController;
-use Carbon\Carbon;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Modules\Utility\GLog;
 use Illuminate\Support\Facades\Http;
-use Inertia\Inertia;
 
 class PhonePePaymentController extends Controller
 {
@@ -33,6 +29,9 @@ class PhonePePaymentController extends Controller
         $payload = $this->createPayload($order, $cert);
         $request = $this->createRequest($payload);
         $x_verify = $this->createXVerify($payload);
+
+        GLog::info("PAYMENT REQUEST", $request);
+
         $response = Http::withBody($request, 'application/json')
             ->withHeaders([
                 'X-CALLBACK-URL' => $this->app_url . '/api/payment/s2s/'. $order->sale_or_no,
@@ -40,10 +39,9 @@ class PhonePePaymentController extends Controller
                 'X-VERIFY' => $x_verify
             ])
             ->post("$this->phonepe_base_url/v3/transaction/sdk-less/initiate")->collect();
-        $data = file_get_contents("php://input");
-        $file = 'PhonepePaymentLog.txt';
-        $data =  "\n$order->sale_or_no\n".json_encode($response);
-        file_put_contents($file, $data, FILE_APPEND | LOCK_EX);
+
+        GLog::info("PAYMENT REQUEST", $response);
+
         return json_decode($response);
 
     }
@@ -54,33 +52,6 @@ class PhonePePaymentController extends Controller
 
         if ($order->op_type_id == env('ISSUE')) {
             if ($order->product_id == env('PRODUCT_SV')) {
-
-                /*return '{
-                    "orderContext": {
-                        "trackingInfo": {
-                            "type": "HTTPS",
-                            "url":"' . $url . '"
-                        }
-                    },
-                    "fareDetails": {
-                        "totalAmount":' . $order->total_price * 100 . ',
-                        "payableAmount":' . $order->total_price * 100 . '
-                    },
-                    "cartDetails": {
-                        "cartItems": [
-                            {
-                                "category": "TRAIN",
-                                "itemId":"' . $order->sale_or_no . '",
-                                "price":' . $order->total_price * 100 . ',
-                                "dateOfTravel": {
-                                    "timestamp": ' . time() . ',
-                                    "zoneOffSet": "+05:30"
-                                },
-                                "numOfPassengers": ' . $order->unit . '
-                            }
-                        ]
-                    }
-                }';*/
 
                 return '{
                 "orderContext": {

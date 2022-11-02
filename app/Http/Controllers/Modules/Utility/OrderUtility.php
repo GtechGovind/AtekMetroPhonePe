@@ -1,4 +1,4 @@
-<?php /** @noinspection LaravelFunctionsInspection */
+<?php
 
 namespace App\Http\Controllers\Modules\Utility;
 
@@ -33,7 +33,7 @@ class OrderUtility extends Controller
 
     public function updateSaleOrder($order, $response)
     {
-      
+
         DB::table('sale_order')
             ->where('sale_or_no', '=', $order->sale_or_no)
             ->update([

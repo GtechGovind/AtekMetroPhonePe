@@ -1,4 +1,4 @@
-<?php /** @noinspection LaravelFunctionsInspection */
+<?php
 
 namespace App\Http\Controllers\Modules\Ticket;
 
