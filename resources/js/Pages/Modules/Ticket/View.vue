@@ -67,7 +67,6 @@
                 :slave_id="slQrNo"
             />
 
-
     </div>
 </template>
 

@@ -60,13 +60,10 @@ export default {
             const res = await axios.get('/get/upcoming');
             const data = res.data
             if(data.length > 1){
-                window.location.replace('/ticket/dashboard')
+                this.$inertia.replace('/ticket/dashboard')
             }
-
         }
     },
-
-
 }
 </script>
 

@@ -95,7 +95,7 @@ export default {
         onSuccess: function (data) {
             this.isLoading = false
             const { redirectUrl } = data
-            window.location.replace(redirectUrl)
+            this.$inertia.replace(redirectUrl)
         },
 
         onFailure: function (data) {

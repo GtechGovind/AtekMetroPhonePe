@@ -3,7 +3,7 @@
     <NavBar/>
     <Hero/>
 
-    <RecentTicket v-if="show"  :recent-tickets="recentOrders" />
+    <RecentTicket v-if="show" :recent-tickets="recentOrders"/>
 
     <TransitionGroup>
         <UpcomingTicket v-if="upcomingOrders.length > 0" :upcoming-tickets="upcomingOrders" class="mt-5"/>
@@ -39,7 +39,7 @@ export default {
         return {
             isLoading: false,
             isDisabled: false,
-            show : false,
+            show: false,
         }
     },
     components: {Button, AnchorButton, UpcomingTicket, RecentTicket, Hero, NavBar, Link},
@@ -61,15 +61,15 @@ export default {
         newOrder: function () {
             this.isLoading = true
             this.isDisabled = true
-            this.$inertia.visit('/ticket/order')
+            this.$inertia.replace('/ticket/order')
         },
 
-        RecentTkt : function (){
-
-            if(this.recentOrders.length > 0 && this.upcomingOrders.length <= 1){
-               this.show = true;
+        RecentTkt: function () {
+            if (this.recentOrders.length > 0 && this.upcomingOrders.length <= 1) {
+                this.show = true;
             }
         }
+
     },
     mounted() {
         this.updateDashboard()
