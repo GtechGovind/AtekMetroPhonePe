@@ -21165,7 +21165,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     newOrder: function newOrder() {
       this.isLoading = true;
       this.isDisabled = true;
-      this.$inertia.visit('/ticket/order');
+      this.$inertia.replace('/ticket/order');
     },
     RecentTkt: function RecentTkt() {
       if (this.recentOrders.length > 0 && this.upcomingOrders.length <= 1) {
@@ -21286,14 +21286,14 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 res = _context3.sent;
                 data = res.data;
                 if (data.length > 1) {
-                  window.location.replace('/ticket/dashboard');
+                  this.$inertia.replace('/ticket/dashboard');
                 }
               case 5:
               case "end":
                 return _context3.stop();
             }
           }
-        }, _callee3);
+        }, _callee3, this);
       }));
       function redirectPage() {
         return _redirectPage.apply(this, arguments);
@@ -21688,7 +21688,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     onSuccess: function onSuccess(data) {
       this.isLoading = false;
       var redirectUrl = data.redirectUrl;
-      window.location.replace(redirectUrl);
+      this.$inertia.replace(redirectUrl);
     },
     onFailure: function onFailure(data) {
       this.isLoading = false;
@@ -21741,7 +21741,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                   confirmButtonText: 'Okay'
                 }).then(function (res) {
                   if (res.isConfirmed) {
-                    _this.$inertia.get("/products");
+                    _this.$inertia.replace("/products");
                   }
                 });
               }
@@ -21838,7 +21838,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     onSuccess: function onSuccess(data) {
       this.isLoading = false;
       var redirectUrl = data.redirectUrl;
-      window.location.replace(redirectUrl);
+      this.$inertia.replace(redirectUrl);
     },
     onFailure: function onFailure(data) {
       this.isLoading = false;
