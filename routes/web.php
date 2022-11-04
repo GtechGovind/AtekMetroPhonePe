@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\MainController;
 use App\Http\Controllers\Modules\GateRejection\GraController;
-use App\Http\Controllers\Modules\Order\OrderStatusController;
 use App\Http\Controllers\Modules\OrderDetailsController;
 use App\Http\Controllers\Modules\Processing\ProcessingController;
 use App\Http\Controllers\Modules\Refund\RefundController;

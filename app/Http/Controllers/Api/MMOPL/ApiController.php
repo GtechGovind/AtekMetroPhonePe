@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\MMOPL;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\Modules\Utility\GLog;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -39,7 +40,7 @@ class ApiController extends Controller
             ->where('pax_id', '=', $data->pax_id)
             ->first();
 
-        Log::info("MMOPL-REQUEST -> " . '{
+        $data = '{
                 "data": {
                     "fare"                      : "' . $data->total_price . '",
                     "source"                    : "' . $data->src_stn_id . '",
@@ -61,45 +62,29 @@ class ApiController extends Controller
                     "pgId"                      : "' . $this->pg_id . '",
                     "pg_order_id"               : "' . $data->pg_txn_no . '"
                 }
-            }');
+            }';
+
+        GLog::info("MMOPL-REQUEST [GEN SJT / RJT]", $data);
 
         $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
-                "data": {
-                    "fare"                      : "' . $data->total_price . '",
-                    "source"                    : "' . $data->src_stn_id . '",
-                    "destination"               : "' . $data->des_stn_id . '",
-                    "tokenType"                 : "' . $data->pass_id . '",
-                    "supportType"               : "' . $data->media_type_id . '",
-                    "qrType"                    : "' . $data->product_id . '",
-                    "operationTypeId"           : "' . $this->op_type_id_issue . '",
-                    "operatorId"                : "' . $this->operator_id . '",
-                    "operatorTransactionId"     : "' . $data->sale_or_no . '",
-                    "name"                      : "' . $user->pax_name . '",
-                    "email"                     : "' . $user->pax_email . '",
-                    "mobile"                    : "' . $user->pax_mobile . '",
-                    "activationTime"            : "' . $data->insert_date . '",
-                    "trips"                     : "' . $data->unit . '"
-                },
-                "payment": {
-                    "pass_price"                : "' . $data->total_price . '",
-                    "pgId"                      : "' . $this->pg_id . '",
-                    "pg_order_id"               : "' . $data->pg_txn_no . '"
-                }
-            }', 'application/json')
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/issueToken')
             ->collect();
 
-        Log::info("MMOPL_RESPONSE -> " . $response);
+        GLog::info("MMOPL_RESPONSE [GEN SJT / RJT]", $response);
 
         return json_decode($response);
     }
 
     public function getSlaveStatus($slave)
     {
+        GLog::info("MMOPL_REQUEST [GET SLAVE STATUS]", $slave);
+
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->get($this->base_url . '/qrcode/status/' . $slave)
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [GET SLAVE STATUS]", $response);
 
         return json_decode($response);
     }
@@ -110,8 +95,7 @@ class ApiController extends Controller
             ->where('pax_id', '=', $data->pax_id)
             ->first();
 
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
                 "data": {
                     "fare"                      : "' . $data->total_price . '",
                     "tokenType"                 : "' . $data->pass_id . '",
@@ -131,9 +115,16 @@ class ApiController extends Controller
                     "pgId"                      : "' . $this->pg_id . '",
                     "pg_order_id"               : "' . $data->pg_txn_no . '"
                 }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [GEN STORE VALUE]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/issuePass')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [GEN STORE VALUE]", $response);
 
         return json_decode($response);
 
@@ -141,9 +132,14 @@ class ApiController extends Controller
 
     public function getPassStatus($master)
     {
+
+        GLog::info("MMOPL_REQUEST [GET PASS STATUS]", $master);
+
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->get($this->base_url . '/pass/bookings?masterTxnId=' . $master)
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [GET PASS STATUS]", $response);
 
         return json_decode($response);
     }
@@ -153,8 +149,8 @@ class ApiController extends Controller
         $user = DB::table('users')
             ->where('pax_id', '=', $data->pax_id)
             ->first();
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+
+        $data = '{
              "data": {
                     "tokenType"             :   "' . $data->total_price . '",
                     "operationTypeId"       :   "' . $this->op_type_id_issue . '",
@@ -167,9 +163,16 @@ class ApiController extends Controller
                     "qrType"                :   "' . $data->product_id . '",
                     "tokenType"             :   "' . $data->pass_id . '"
                  }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [GEN TRIP]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/issueTrip')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [GEN TRIP]", $response);
 
         return json_decode($response);
 
@@ -177,8 +180,8 @@ class ApiController extends Controller
 
     public function reloadStoreValueStatus($order)
     {
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+
+        $data = '{
                 "data": {
                     "fare"          : "' . $order->total_price . '",
                     "supportType"   : "' . $this->media_type_id . '",
@@ -187,17 +190,23 @@ class ApiController extends Controller
                     "operatorId"    : "' . $this->operator_id . '",
                     "masterTxnId"   : "' . $order->ms_qr_no . '"
                 }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [RELOAD STORE VALUE STATUS]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/canReloadPass')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [RELOAD STORE VALUE STATUS]", $response);
 
         return json_decode($response);
     }
 
     public function reloadTripPassStatus($order)
     {
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
                   "data": {
                     "fare"          : "' . $order->total_price . '",
                     "supportType"   : "' . $this->media_type_id . '",
@@ -208,9 +217,16 @@ class ApiController extends Controller
                     "operatorId"    : "' . $this->operator_id . '",
                     "masterTxnId"   : "' . $order->ms_qr_no . '"
                   }
-                }', 'application/json')
+                }';
+
+        GLog::info("MMOPL_REQUEST [RELOAD TRIP PASS STATUS]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/canReloadPass')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [RELOAD TRIP PASS STATUS]", $response);
 
         return json_decode($response);
     }
@@ -221,8 +237,7 @@ class ApiController extends Controller
             ->where('pax_id', '=', $order->pax_id)
             ->first();
 
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
                 "data": {
                     "fare"                  : "' . $order->total_price . '",
                     "tokenType"             : "' . $order->pass_id . '",
@@ -241,9 +256,16 @@ class ApiController extends Controller
                     "pgId"                      : "' . $this->pg_id . '",
                     "pg_order_id"               : "' . $order->pg_txn_no . '"
                 }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [RELOAD STORE VALUE PASS]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/reloadPass')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [RELOAD STORE VALUE PASS]", $response);
 
         return json_decode($response);
     }
@@ -254,8 +276,7 @@ class ApiController extends Controller
             ->where('pax_id', '=', $order->pax_id)
             ->first();
 
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
               "data": {
                 "fare"                  : "' . $order->total_price . '",
                 "source"                : "' . $order->src_stn_id . '",
@@ -278,10 +299,15 @@ class ApiController extends Controller
                     "pgId"                      : "' . $this->pg_id . '",
                     "pg_order_id"               : "' . $order->pg_txn_no . '"
               }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [RELOAD TRIP PASS]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/reloadPass')
             ->collect();
-
+        GLog::info("MMOPL_REQUEST [RELOAD TRIP PASS]", $response);
         return json_decode($response);
 
     }
@@ -291,8 +317,8 @@ class ApiController extends Controller
         $user = DB::table('users')
             ->where('pax_id', '=', $data->pax_id)
             ->first();
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+
+        $request = '{
                     "data": {
                         "fare"                      : "' . $data->total_price . '",
                         "supportType"               : "' . $data->media_type_id . '",
@@ -313,9 +339,17 @@ class ApiController extends Controller
                            "pgId"                      : "' . $this->pg_id . '",
                            "pg_order_id"               : "' . $data->pg_txn_no . '"
                     }
-                }', 'application/json')
+                }';
+
+        GLog::info("MMOPL_REQUEST [GENERATE TRIP PASS]", $request);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($request, 'application/json')
             ->post($this->base_url . '/qrcode/issuePass')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [GENERATE TRIP PASS]", $response);
+
         return json_decode($response);
     }
 
@@ -325,17 +359,20 @@ class ApiController extends Controller
         $pass_id = $data->pass_id;
         $master_id = $data->ms_qr_no;
 
+        GLog::info("MMOPL_REQUEST [GET REFUND INFO]", $data);
+
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->get($this->base_url . "/qrcode/refund/info?tokenType=$pass_id&masterTxnId=$master_id&operatorId=$op_id")
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [GET REFUND INFO]", $response);
 
         return json_decode($response);
     }
 
     public function refundTicket($data, $refund_or_no)
     {
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
                 "data" : {
                     "operatorId"                        :"' . $data->data->operatorId . '",
                     "supportType"                       :"' . $data->data->supportType . '",
@@ -365,9 +402,16 @@ class ApiController extends Controller
                     "masterTxnId"                       :"' . $data->data->masterTxnId . '",
                     "pgId"                              :"' . $this->pg_id . '"
                 }
-             }', 'application/json')
+             }';
+
+        GLog::info("MMOPL_REQUEST [REFUND TICKET]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/refund')
             ->collect();
+
+        GLog::info("MMOPL_RESPONSE [REFUND TICKET]", $response);
 
         return json_decode($response);
 
@@ -375,18 +419,22 @@ class ApiController extends Controller
 
     public function graInfo($slave_id, $station_id)
     {
+
+        GLog::info("MMOPL_REQUEST [GET GRA INFO]", $slave_id . " | " . $station_id);
+
         $response = Http::withHeaders(['Authorization' => $this->auth])
             ->get($this->base_url . "/qrcode/penalty/status?transactionId=$slave_id&station=$station_id")
             ->collect();
 
-        Log::info("GRA INFO -> " .$response);
+        GLog::info("MMOPL_RESPONSE [GET GRA INFO]", $response);
 
         return json_decode($response);
     }
 
     public function applyGra($response, $order)
     {
-        Log::info("GRA REQ -> " .'{
+
+        $data = '{
                 "data": {
                     "fare"                      : "' . $order->total_price . '",
                     "destination"               : "' . $order->des_stn_id . '",
@@ -406,34 +454,16 @@ class ApiController extends Controller
                     "pgId"                      : "' . $this->pg_id . '",
                     "pg_order_id"               : "' . $order->pg_txn_no . '"
                 }
-            }');
+            }';
+
+        GLog::info("MMOPL_REQUEST [APPLY GRA]", $data);
 
         $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody(json_encode(json_decode('{
-                "data": {
-                    "fare"                      : "' . $order->total_price . '",
-                    "destination"               : "' . $order->des_stn_id . '",
-                    "refTxnId"                  : "' . $order->ref_sl_qr . '",
-                    "tokenType"                 : "' . $order->pass_id . '",
-                    "supportType"               : "' . $this->media_type_id . '",
-                    "qrType"                    : "' . $order->product_id . '",
-                    "operatorId"                : "' . $this->operator_id . '",
-                    "operatorTransactionId"     : "' . $order->sale_or_no . '",
-                    "activationTime"            : "' . time() . '",
-                    "freeExitOptionId"          : 0,
-                    "penalties"                 : ' . json_encode($response->data->penalties, JSON_OBJECT_AS_ARRAY) . ',
-                    "overTravelCharges"         : ' . json_encode($response->data->overTravelCharges, JSON_OBJECT_AS_ARRAY) . '
-                },
-                "payment": {
-                    "pass_price"                : "' . $order->total_price . '",
-                    "pgId"                      : "' . $this->pg_id . '",
-                    "pg_order_id"               : "' . $order->pg_txn_no . '"
-                }
-            }')), 'application/json')
+            ->withBody(json_encode(json_decode($data)), 'application/json')
             ->post($this->base_url . '/qrcode/penalty/issueToken')
             ->collect();
 
-        Log::info("GRA RESPONSE -> " . $response);
+        GLog::info("MMOPL_RESPONSE [APPLY GRA]", $response);
 
         return json_decode($response);
 
@@ -441,8 +471,7 @@ class ApiController extends Controller
 
     public function canIssuePass($product_id, $pass_id)
     {
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
                 "data": {
                     "fare"          : "1100",
                     "mobile"        : "' . Auth::user()->pax_mobile . '",
@@ -451,8 +480,15 @@ class ApiController extends Controller
                     "supportType"   : "' . $this->media_type_id . '",
                     "tokenType"     : "' . $pass_id . '"
                 }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [CAN ISSUE PASS]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/canIssuePass');
+
+        GLog::info("MMOPL_RESPONSE [CAN ISSUE PASS]", $response);
 
         return json_decode($response);
 
@@ -460,8 +496,7 @@ class ApiController extends Controller
 
     public function canIssuePassTP($product_id, $pass_id)
     {
-        $response = Http::withHeaders(['Authorization' => $this->auth])
-            ->withBody('{
+        $data = '{
                 "data": {
                     "fare"          : "1100",
                     "mobile"        : "' . Auth::user()->pax_mobile . '",
@@ -472,14 +507,21 @@ class ApiController extends Controller
                     "supportType"   : "' . $this->media_type_id . '",
                     "tokenType"     : "' . $pass_id . '"
                 }
-            }', 'application/json')
+            }';
+
+        GLog::info("MMOPL_REQUEST [CAN ISSUE TP PASS]", $data);
+
+        $response = Http::withHeaders(['Authorization' => $this->auth])
+            ->withBody($data, 'application/json')
             ->post($this->base_url . '/qrcode/canIssuePass');
+
+        GLog::info("MMOPL_RESPONSE [CAN ISSUE TP PASS]", $response);
 
         return json_decode($response);
 
     }
 
-    public function order_status($order_id)
+    /*public function order_status($order_id)
     {
 
         print_r($order_id);
@@ -489,6 +531,6 @@ class ApiController extends Controller
         return json_decode($response);
 
 
-    }
+    }*/
 
 }
