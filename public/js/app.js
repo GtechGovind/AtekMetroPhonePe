@@ -20687,27 +20687,42 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
   data: function data() {
     return {
       reload: {
-        reloadAmount: 0,
+        reloadAmount: 100,
         order_id: this.order_id
       },
       isLoading: false,
-      errors: null
+      isDisabled: false,
+      error: null
     };
   },
   methods: {
     addAmount: function addAmount(amount) {
       this.reload.reloadAmount += parseInt(amount);
+      this.validate();
+    },
+    setAmount: function setAmount(amount) {
+      this.reload.reloadAmount = parseInt(amount);
+      this.validate();
     },
     validate: function validate() {
-      if (this.pass.price < 100) {
-        this.pass.errors.price = 'Amount must be grater then 100';
-      } else if (this.pass.price % 100 !== 0) {
-        this.pass.errors.price = 'Amount must be multiple of 100';
-      } else if (this.pass.price > 3000) {
-        this.pass.errors.price = 'Amount must not be grater then 3000';
+      if (this.reload.reloadAmount === '') {
+        this.reload.reloadAmount = 0;
+      } else if (this.reload.reloadAmount < 100) {
+        this.error = 'Amount must be minimum 100';
+        this.reload.reloadAmount = 100;
+        this.isDisabled = false;
+      } else if (this.reload.reloadAmount % 100 !== 0) {
+        this.error = 'Amount must be multiple of 100';
+        this.isDisabled = true;
+      } else if (this.reload.reloadAmount > 3000) {
+        this.error = 'Amount must not be greater then 3000';
+        this.isDisabled = true;
       } else {
-        this.pass.errors.price = '';
+        this.error = null;
+        this.isDisabled = false;
+        return true;
       }
+      return false;
     },
     genOrder: function () {
       var _genOrder = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime().mark(function _callee() {
@@ -20746,7 +20761,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
     onFailure: function onFailure(data) {
       this.isLoading = false;
       var errors = data.errors;
-      this.errors = errors;
+      this.error = errors;
     }
   }
 });
@@ -23644,6 +23659,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
       return $options.addAmount(-100);
     })
   }, _hoisted_5), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [_hoisted_7, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    disabled: "",
     type: "number",
     id: "price",
     "class": "form_number_input",
@@ -23707,17 +23723,28 @@ var _hoisted_2 = {
   "class": "bg-white m-2 p-5 shadow border rounded"
 };
 var _hoisted_3 = {
-  "class": "mb-3"
+  "class": "grid grid-cols-5 text-center content-center w-full items-center"
 };
-var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
+var _hoisted_4 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+  "class": "fas fa-minus-circle fa-xl mt-1"
+}, null, -1 /* HOISTED */);
+var _hoisted_5 = [_hoisted_4];
+var _hoisted_6 = {
+  "class": "mb-3 col-span-3"
+};
+var _hoisted_7 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("label", {
   "for": "price",
   "class": "block mb-2 text-sm font-medium text-gray-900"
 }, "Enter Amount", -1 /* HOISTED */);
-var _hoisted_5 = {
+var _hoisted_8 = {
   key: 0,
-  "class": "block m-1 text-sm text-red-500"
+  "class": "c-error"
 };
-var _hoisted_6 = {
+var _hoisted_9 = /*#__PURE__*/(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("i", {
+  "class": "fas fa-plus-circle fa-xl mt-1"
+}, null, -1 /* HOISTED */);
+var _hoisted_10 = [_hoisted_9];
+var _hoisted_11 = {
   "class": "mt-3 grid grid-cols-3 gap-5"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -23725,40 +23752,46 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
   var _component_hero = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("hero");
   var _component_chip = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("chip");
   var _component_Button = (0,vue__WEBPACK_IMPORTED_MODULE_0__.resolveComponent)("Button");
-  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_nav_bar), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_hero), _hoisted_1, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [_hoisted_4, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
-    type: "number",
+  return (0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)(vue__WEBPACK_IMPORTED_MODULE_0__.Fragment, null, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_nav_bar), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_hero), _hoisted_1, (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_2, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_3, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    onClick: _cache[0] || (_cache[0] = function ($event) {
+      return $options.addAmount(-100);
+    })
+  }, _hoisted_5), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [_hoisted_7, (0,vue__WEBPACK_IMPORTED_MODULE_0__.withDirectives)((0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("input", {
+    disabled: "",
     id: "price",
     "class": "form_number_input",
-    placeholder: "₹ 500",
-    required: "",
-    "onUpdate:modelValue": _cache[0] || (_cache[0] = function ($event) {
+    "onUpdate:modelValue": _cache[1] || (_cache[1] = function ($event) {
       return $data.reload.reloadAmount = $event;
     }),
-    onKeyup: _cache[1] || (_cache[1] = function () {
+    onKeyup: _cache[2] || (_cache[2] = function () {
       return $options.validate && $options.validate.apply($options, arguments);
     })
-  }, null, 544 /* HYDRATE_EVENTS, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.reload.reloadAmount]]), $data.errors ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_5, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.reload.errors.reloadAmount), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_6, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_chip, {
-    title: '₹ 100',
-    onClick: _cache[2] || (_cache[2] = function ($event) {
+  }, null, 544 /* HYDRATE_EVENTS, NEED_PATCH */), [[vue__WEBPACK_IMPORTED_MODULE_0__.vModelText, $data.reload.reloadAmount]]), $data.error ? ((0,vue__WEBPACK_IMPORTED_MODULE_0__.openBlock)(), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementBlock)("div", _hoisted_8, (0,vue__WEBPACK_IMPORTED_MODULE_0__.toDisplayString)($data.error), 1 /* TEXT */)) : (0,vue__WEBPACK_IMPORTED_MODULE_0__.createCommentVNode)("v-if", true)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", {
+    onClick: _cache[3] || (_cache[3] = function ($event) {
       return $options.addAmount(100);
+    })
+  }, _hoisted_10)]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createElementVNode)("div", _hoisted_11, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_chip, {
+    title: '₹ 100',
+    onClick: _cache[4] || (_cache[4] = function ($event) {
+      return $options.setAmount(100);
     })
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_chip, {
     title: '₹ 200',
-    onClick: _cache[3] || (_cache[3] = function ($event) {
-      return $options.addAmount(200);
+    onClick: _cache[5] || (_cache[5] = function ($event) {
+      return $options.setAmount(200);
     })
   }), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_chip, {
     title: '₹ 500',
-    onClick: _cache[4] || (_cache[4] = function ($event) {
-      return $options.addAmount(500);
+    onClick: _cache[6] || (_cache[6] = function ($event) {
+      return $options.setAmount(500);
     })
   })])]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(_component_Button, {
+    onClick: $options.genOrder,
     "is-loading": $data.isLoading,
-    "is-disabled": $data.isLoading,
+    "is-disabled": $data.isDisabled,
     type: 'button',
-    title: 'PROCEED TO PAY ₹ ' + $data.reload.reloadAmount,
-    onClick: $options.genOrder
-  }, null, 8 /* PROPS */, ["is-loading", "is-disabled", "title", "onClick"])], 64 /* STABLE_FRAGMENT */);
+    title: 'PROCEED TO PAY ₹ ' + $data.reload.reloadAmount
+  }, null, 8 /* PROPS */, ["onClick", "is-loading", "is-disabled", "title"])], 64 /* STABLE_FRAGMENT */);
 }
 
 /***/ }),
