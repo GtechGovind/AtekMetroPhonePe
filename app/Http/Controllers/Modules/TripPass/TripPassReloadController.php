@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\MMOPL\ApiController;
 use App\Http\Controllers\Api\PhonePe\PhonePePaymentController;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Modules\Utility;
+use App\Http\Controllers\Modules\Utility\OrderUtility;
 use App\Models\SaleOrder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -70,7 +71,7 @@ class TripPassReloadController extends Controller
             ->where('sale_or_no', '=', $request->input('order_id'))
             ->first();
 
-        $SaleOrderNumber = Utility::genSaleOrderNumber($old_order->pass_id);
+        $SaleOrderNumber = OrderUtility::genSaleOrderNumber($old_order->pass_id);
         SaleOrder::reload(
             $old_order,
             $request->input('reloadAmount'),
