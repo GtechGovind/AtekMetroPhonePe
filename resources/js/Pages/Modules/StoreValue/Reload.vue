@@ -8,33 +8,45 @@
     </div>
 
     <div class="bg-white m-2 p-5 shadow border rounded">
-        <div class="mb-3">
-            <label for="price" class="block mb-2 text-sm font-medium text-gray-900">Enter Amount</label>
-            <input
-                type="number"
-                id="price"
-                class="form_number_input"
-                placeholder="₹ 500" required v-model="reload.reloadAmount"
-                v-on:keyup="validate"
-            />
-            <div class="block m-1 text-sm text-red-500" v-if="errors">
-                {{ reload.errors.reloadAmount }}
+        <div class="grid grid-cols-5 text-center content-center w-full items-center">
+            <div  v-on:click="addAmount(-100)"><i class="fas fa-minus-circle fa-xl mt-1"></i></div>
+            <div class="mb-3 col-span-3">
+                <label for="price" class="block mb-2 text-sm font-medium text-gray-900">Enter Amount</label>
+                <input
+                    disabled
+                    id="price"
+                    class="form_number_input"
+                    v-model="reload.reloadAmount"
+                    v-on:keyup="validate"
+                />
+                <div class="c-error" v-if="error">
+                    {{ error }}
+                </div>
+            </div>
+            <div
+
+                v-on:click="addAmount(100)">
+                <i class="fas fa-plus-circle fa-xl mt-1"></i>
             </div>
         </div>
+
+
         <div class="mt-3 grid grid-cols-3 gap-5">
-            <chip :title="'₹ 100'" v-on:click="addAmount(100)"/>
-            <chip :title="'₹ 200'" v-on:click="addAmount(200)"/>
-            <chip :title="'₹ 500'" v-on:click="addAmount(500)"/>
+            <chip :title="'₹ 100'" v-on:click="setAmount(100)"/>
+            <chip :title="'₹ 200'" v-on:click="setAmount(200)"/>
+            <chip :title="'₹ 500'" v-on:click="setAmount(500)"/>
         </div>
+
     </div>
 
     <Button
+        v-on:click="genOrder"
         :is-loading="isLoading"
-        :is-disabled="isLoading"
+        :is-disabled="isDisabled"
         :type="'button'"
         :title="'PROCEED TO PAY ₹ ' + reload.reloadAmount"
-        v-on:click="genOrder"
     />
+
 
 </template>
 
@@ -47,6 +59,7 @@ import NavBar from "../../../Shared/NavBar";
 import Button from "../../../Shared/Component/Button";
 import axios from "axios";
 import Footer from "../../../Shared/Footer";
+
 export default {
 
     props: {
@@ -57,35 +70,53 @@ export default {
 
     components: {Footer, Button, NavBar, Hero, Chip},
 
+
     data() {
         return {
             reload: {
-                reloadAmount: 0,
+                reloadAmount: 100,
                 order_id: this.order_id
             },
+
             isLoading: false,
-            errors: null
+            isDisabled: false,
+            error: null
         }
     },
+
 
     methods: {
 
         addAmount: function (amount) {
             this.reload.reloadAmount += parseInt(amount)
+            this.validate()
+        },
+
+        setAmount: function (amount) {
+            this.reload.reloadAmount = parseInt(amount)
+            this.validate()
         },
 
         validate: function () {
 
-            if (this.pass.price < 100) {
-                this.pass.errors.price = 'Amount must be grater then 100'
-            } else if (this.pass.price % 100 !== 0) {
-                this.pass.errors.price = 'Amount must be multiple of 100'
-            } else if (this.pass.price > 3000) {
-                this.pass.errors.price = 'Amount must not be grater then 3000'
+            if (this.reload.reloadAmount === '') {
+                this.reload.reloadAmount = 0
+            } else if (this.reload.reloadAmount < 100) {
+                this.error = 'Amount must be minimum 100'
+                this.reload.reloadAmount = 100
+                this.isDisabled = false
+            } else if (this.reload.reloadAmount % 100 !== 0) {
+                this.error = 'Amount must be multiple of 100'
+                this.isDisabled = true
+            } else if (this.reload.reloadAmount > 3000) {
+                this.error = 'Amount must not be greater then 3000'
+                this.isDisabled = true
             } else {
-                this.pass.errors.price = ''
+                this.error = null
+                this.isDisabled = false
+                return true
             }
-
+            return false
         },
 
         genOrder: async function () {
@@ -98,15 +129,16 @@ export default {
 
         onSuccess: function (data) {
             this.isLoading = false
-            const { redirectUrl } = data
+            const {redirectUrl} = data
             window.location.replace(redirectUrl)
         },
 
         onFailure: function (data) {
             this.isLoading = false
-            const { errors } = data
-            this.errors = errors
-        }
+            const {errors} = data
+            this.error = errors
+        },
+
 
     }
 }

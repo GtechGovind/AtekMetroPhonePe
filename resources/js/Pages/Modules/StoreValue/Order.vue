@@ -13,6 +13,7 @@
             <div class="mb-3 col-span-3">
                 <label for="price" class="block mb-2 text-sm font-medium text-gray-900">Enter Amount</label>
                 <input
+                    disabled
                     type="number"
                     id="price"
                     class="form_number_input"
